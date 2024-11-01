@@ -26,7 +26,7 @@ const handler=NextAuth({
             if(!params.user.email){
                 return false;
             }
-            const isUserPresent=await fetch(`http://localhost:3001/user/${params.user.email}`);
+            const isUserPresent=await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/user/${params.user.email}`);
             if(!isUserPresent.ok){
                 return false;
             }
@@ -35,7 +35,7 @@ const handler=NextAuth({
             if(isUser.email){
                 return true;
             }
-        await fetch(`http://localhost:3001/users`,{
+        await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/users`,{
             method:'POST',
             headers: {
                 "Content-Type": "application/json",  // Set the content type
@@ -57,7 +57,7 @@ const handler=NextAuth({
         },
         async session({session}){
             try{
-                const isUserPresent=await fetch(`${process.env.NEXT_PUBLIC_URL}/user/${session.user?.email}`);
+                const isUserPresent=await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/user/${session.user?.email}`);
             if(!isUserPresent.ok){
                 throw new Error("Error from the server")
 
