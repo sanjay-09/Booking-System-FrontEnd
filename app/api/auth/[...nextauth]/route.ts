@@ -23,6 +23,7 @@ const handler=NextAuth({
         async signIn(params){
            try{
             console.log("in sign in----->")
+            console.log("params",params.user.email);
             if(!params.user.email){
                 return false;
             }
