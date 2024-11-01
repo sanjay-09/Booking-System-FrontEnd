@@ -49,6 +49,9 @@ export default function DetailedSeatBookingDashboard() {
       toast.success("Seat Booked");
       fetchData();
     }
+    else{
+      toast.error("Seat is taken")
+    }
 
   }
 
