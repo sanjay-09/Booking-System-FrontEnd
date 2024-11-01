@@ -22,19 +22,17 @@ const handler=NextAuth({
     callbacks:{
         async signIn(params){
            try{
-            console.log("in sign in----->")
-            console.log("params",params.user.email);
-            console.log("NEXT_PUBLIC_SERVER_URL",process.env.NEXT_PUBLIC_SERVER_URL);
             if(!params.user.email){
                 return false;
             }
+          
             const isUserPresent=await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/user/${params.user.email}`);
             if(!isUserPresent.ok){
-                return false;
+                throw new Error('Error while fetching the call');
+
             }
-            console.log("daat---")
             const isUser=await isUserPresent.json();
-            if(isUser.email){
+            if(isUser?.email){
                 return true;
             }
         await fetch(`${process.env.NEXT_PUBLIC_SERVER_URL}/users`,{
@@ -51,8 +49,8 @@ const handler=NextAuth({
         return true;
            }
            catch(err){
-            console.log(err)
-            return true;
+            console.log(err);
+            return false;
 
            }
 
@@ -74,7 +72,7 @@ const handler=NextAuth({
             return session;
             }
             catch(err:any){
-                return session
+                return session;
                
             }
 
