@@ -28,14 +28,13 @@ const Header=()=>{
             </span>
           </Link>
           {
-            session?.user ? <Button 
-          >
+            session?.user ? <Button onClick={()=>{signOut()}}>
             SignOut
            
           </Button>:
          <Button 
          asChild
-       
+       onClick={()=>{signIn()}}
        >
         SignIn
         
