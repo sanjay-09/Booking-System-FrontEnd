@@ -1,101 +1,121 @@
-import Image from "next/image";
+"use client"
+import React, { useEffect, useState } from 'react'
+import { Card, CardContent } from "@/components/ui/card"
+import { Badge } from "@/components/ui/badge"
+import { Button } from '@/components/ui/button'
+import { useSession } from 'next-auth/react'
+import toast  from 'react-hot-toast';
 
-export default function Home() {
+// Simulated seat data
+
+type initialSeat={
+id:number,
+  status:'Available' | 'Pending' | 'Booked'
+  class:string
+}
+const statusColors = {
+  Available: "bg-green-500 hover:bg-green-600",
+  Booked: "bg-red-500",
+  Pending: "bg-yellow-500"
+}
+const SERVER_URL=process.env.NEXT_PUBLIC_SERVER_URL;
+
+export default function DetailedSeatBookingDashboard() {
+  console.log("c1")
+  const [seats, setSeats] = useState<initialSeat[] | []>([]);
+  const [selectedSeats, setSelectedSeats] = useState<number>()
+  const [clickedSeat, setClickedSeat] = useState<initialSeat | null>(null)
+  const {data:session}=useSession();
+
+  const handleSeatClick = (seat:initialSeat) => {
+    setClickedSeat(seat)
+    if (seat.status === 'Available') {
+        setSelectedSeats(seat.id);
+    }
+    else if(seat.status==='Booked'){
+      toast.error("Seat is Already Booked");
+    }
+    else{
+      toast.error("Seat is underProcessing....")
+    }
+
+  }
+  const handleBooking=async()=>{
+    console.log("handleBooking");
+    const data=await fetch(`${SERVER_URL}/seat/${selectedSeats}/user/${session?.user.id}`,{
+      method:'POST'
+    });
+    if(data.ok){
+      toast.success("Seat Booked");
+      fetchData();
+    }
+
+  }
+
+  useEffect(()=>{
+
+    fetchData();
+  },[]);
+
+  const fetchData=async()=>{
+    const data=await fetch(`${SERVER_URL}/seatsData`);
+    if(!data.ok){
+      console.log("error");
+         return;
+
+    }
+    const seatsResponse=await data.json();
+    const seats=seatsResponse.data;
+    console.log("seats",seats);
+    setSeats(seats);
+  }
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <div className="container mx-auto p-4 max-w-3xl">
+      <h1 className="text-2xl font-bold mb-4">Detailed Seat Booking Dashboard</h1>
+      
+      <div className="flex gap-4 mb-6">
+        <Badge variant="secondary" className="bg-green-500 text-white">Available</Badge>
+        <Badge variant="secondary" className="bg-red-500 text-white">Booked</Badge>
+        <Badge variant="secondary" className="bg-yellow-500 text-white">Pending</Badge>
+      </div>
+      
+      <div className="grid grid-cols-5 gap-4 mb-6">
+        {seats.map((seat) => (
+          <Card 
+            key={seat.id} 
+            className={`${statusColors[seat.status]} cursor-pointer transition-colors }`}
+            onClick={() => handleSeatClick(seat)}
+          >
+            <CardContent className="p-4 text-center">
+              <span className="text-lg font-semibold text-black">{seat.id}</span>
+              <span className="sr-only">{seat.status}</span>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  <div>
+  
+  {
+    clickedSeat?.status==='Available' && <div className='mt-2'>
+    <Button onClick={handleBooking} >Book</Button>
+  </div>
+  }
+
+  </div>
+      {clickedSeat  &&(
+        <div className="mt-6">
+          <h2 className="text-xl font-semibold mb-2">Seat Details</h2>
+          <Card>
+            <CardContent className="p-4">
+              <p><strong>Seat ID:</strong> {clickedSeat.id}</p>
+              <p><strong>Status:</strong> {clickedSeat.status}</p>
+              <p><strong>Class:</strong> {clickedSeat.class}</p>
+            </CardContent>
+          </Card>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+      )}
     </div>
-  );
+  )
 }
