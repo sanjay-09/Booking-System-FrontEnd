@@ -24,6 +24,7 @@ const handler=NextAuth({
            try{
             console.log("in sign in----->")
             console.log("params",params.user.email);
+            console.log("NEXT_PUBLIC_SERVER_URL",process.env.NEXT_PUBLIC_SERVER_URL);
             if(!params.user.email){
                 return false;
             }
