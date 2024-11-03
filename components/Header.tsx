@@ -9,7 +9,7 @@ const Header=()=>{
     console.log("data",session); 
 
     useEffect(()=>{
-        console.log("status1",status);
+        console.log("status11",status);
         if(status==='unauthenticated'){
             signIn();
         }
